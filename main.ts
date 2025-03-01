@@ -4,6 +4,7 @@ import express from "express";
 import fs from "fs";
 import { randomUUID } from "crypto";
 
+/** アートワーク情報です。ファイル名がアートワークであることを証明します。 */
 interface Artwork {
     /** 国 */
     lang: string;
@@ -13,6 +14,7 @@ interface Artwork {
     main: boolean;
 }
 
+/** 歌詞情報です。 */
 interface Lyrics {
     /** 国 */
     lang: string;
@@ -56,6 +58,7 @@ interface Lyrics {
     artist?: string;
 };
 
+/** ミュージックプレイヤーのベース情報です。JSONで記録されます。 */
 interface musicplayerJSON {
     /** アルバムリスト */
     albums: {
@@ -232,6 +235,7 @@ interface musicplayerJSON {
             };
         }[];
     }[];
+    /** プレイリストリスト */
     playlists: {
         /** 識別UUID */
         uuid: string;
@@ -246,15 +250,18 @@ interface musicplayerJSON {
         /** 説明 */
         description?: string;
         /** プレイリストの曲 */
-        musics?: {
+        musics: {
             uuid: string;
             type: "music" | "video";
             number: number;
         }[];
     }[];
+    /** ファイルリスト */
     files: {
         /** 識別名(ファイル名) */
         name: string;
+        /** 説明 */
+        description?: string;
         /** 公式情報であるかどうか。これはサーバー管理主またはプログラム実行主が決める。これがtrueである場合、生情報を直接ほかのユーザーが変更することが出来なくなり、ユーザーが変更を試みるとユーザー毎の差分情報が作成される。 */
         officialInfo: boolean;
         /** 情報の作成主のUUID。この情報の持ち主であり管理主となる。officialInfoがtrueの場合は自動的に管理者の所有物となる。 */
@@ -284,54 +291,76 @@ interface musicplayerJSON {
             downloadURL?: string;
         }
     }[];
+    /** ユーザーリスト */
     users: {
         /** 識別UUID */
         uuid: string;
+        /** ユーザー名 */
+        name: string;
+        /** ユーザーが見ることのできるアルバムUUID(権限) */
+        viewAlbums: string[];
+        /** ユーザーが見ることのできるアーティストUUID(権限) */
+        viewArtists: string[];
+        /** ユーザーが見ることのできるミュージックUUID(権限) */
+        viewMusics: string[];
+        /** ユーザーが見ることのできるプレイリストUUID(権限) */
+        viewPlaylists: string[];
+        /** ユーザーが見ることのできるファイル名(権限) */
+        viewFiles: string[];
     }[];
 }
 
+/** 変数がアルバムのUUIDであることを証明します。 */
 interface AlbumUUID {
     type: "album";
     uuid: string;
 }
 
+/** 変数がアーティストのUUIDであることを証明します。 */
 interface ArtistUUID {
     type: "artist";
     uuid: string;
 }
 
+/** 変数がミュージックのUUIDであることを証明します。 */
 interface MusicUUID {
     type: "music";
     uuid: string;
 }
 
+/** 変数がプレイリストのUUIDであることを証明します。 */
 interface PlaylistUUID {
     type: "playlist";
     uuid: string;
 }
 
+/** 変数がファイル名であることを証明します。 */
 interface FileName {
     type: "file";
     name: string;
 }
 
+/** 変数がユーザーのUUIDであることを証明します。 */
 interface UserUUID {
     type: "user";
     uuid: string;
 }
 
+/** 変数が曲のストリームにアクセスする情報であることを証明します。 */
 interface MusicStream {
     type: "musicStream";
     number: number;
     musicUUID: MusicUUID;
 }
 
+/** 変数が動画のストリームにアクセスする情報であることを証明します。 */
 interface VideoStream {
     type: "videoStream";
     number: number;
     musicUUID: MusicUUID;
 }
 
+/** ミュージックプレイヤーJSONを正しく管理するAPIです。JSON内の型定義の乱れや整合性に欠けている状態であってもエラーを回避します。必要に応じて修復することも可能です。 */
 class MusicPlayerJSONManagerClass {
     json: musicplayerJSON;
     constructor() {
@@ -344,9 +373,11 @@ class MusicPlayerJSONManagerClass {
             users: []
         };
     }
+    /** JSONを保存します。 */
     save() {
         fs.writeFileSync("musicplayer.json", JSON.stringify(this.json));
     }
+    /** アルバムを作成します。 */
     createAlbum(info: {
         userUUID: UserUUID;
         lang: string;
@@ -377,6 +408,7 @@ class MusicPlayerJSONManagerClass {
             uuid: uuid
         };
     }
+    /** アーティストを作成します。 */
     createArtist(info: {
         userUUID: UserUUID;
         lang: string;
@@ -404,6 +436,7 @@ class MusicPlayerJSONManagerClass {
             uuid: uuid
         };
     }
+    /** ミュージックを作成します。 */
     createMusic(info: {
         userUUID: UserUUID;
         lang: string;
@@ -436,6 +469,7 @@ class MusicPlayerJSONManagerClass {
             uuid: uuid
         };
     }
+    /** プレイリストを作成します。 */
     createPlaylist(info: {
         userUUID: UserUUID;
         name?: string;
@@ -456,6 +490,7 @@ class MusicPlayerJSONManagerClass {
             uuid: uuid
         };
     }
+    /** ファイルを追加します。 */
     addFile(info: {
         userUUID: UserUUID;
         name: string;
@@ -480,6 +515,7 @@ class MusicPlayerJSONManagerClass {
             name: info.name
         };
     }
+    /** アルバムを削除します。 */
     deleteAlbum(info: {
         userUUID: UserUUID;
         albumUUID: AlbumUUID;
@@ -488,6 +524,7 @@ class MusicPlayerJSONManagerClass {
         if (index !== -1) { this.json.albums.splice(index, 1); }
         return true;
     }
+    /** アーティストを削除します。 */
     deleteArtist(info: {
         userUUID: UserUUID;
         artistUUID: ArtistUUID;
@@ -496,6 +533,7 @@ class MusicPlayerJSONManagerClass {
         if (index !== -1) { this.json.artists.splice(index, 1); }
         return true;
     }
+    /** ミュージックを削除します。 */
     deleteMusic(info: {
         userUUID: UserUUID;
         musicUUID: MusicUUID;
@@ -504,6 +542,7 @@ class MusicPlayerJSONManagerClass {
         if (index !== -1) { this.json.musics.splice(index, 1); }
         return true;
     }
+    /** プレイリストを削除します。 */
     deletePlaylist(info: {
         userUUID: UserUUID;
         playlistUUID: PlaylistUUID;
@@ -512,6 +551,7 @@ class MusicPlayerJSONManagerClass {
         if (index !== -1) { this.json.playlists.splice(index, 1); }
         return true;
     }
+    /** ファイルを削除します。 */
     deleteFile(info: {
         userUUID: UserUUID;
         name: FileName;
@@ -520,6 +560,7 @@ class MusicPlayerJSONManagerClass {
         if (index !== -1) { this.json.files.splice(index, 1); }
         return true;
     }
+    /** アルバムを編集します。 */
     editAlbum(info: {
         userUUID: UserUUID;
         albumUUID: AlbumUUID;
@@ -792,6 +833,7 @@ class MusicPlayerJSONManagerClass {
         }
         return new EditAlbum(info, this);
     }
+    /** アーティストを編集します。 */
     editArtist(info: {
         userUUID: UserUUID;
         artistUUID: ArtistUUID;
@@ -846,7 +888,7 @@ class MusicPlayerJSONManagerClass {
                     return true;
                 } else {
                     return false;
-                }                
+                }
             }
             /** キャラクターボイスを削除します。 */
             removeCharacterVoice(artistUUID: ArtistUUID) {
@@ -923,6 +965,7 @@ class MusicPlayerJSONManagerClass {
         }
         return new EditArtist(info, this);
     }
+    /** ミュージックを編集します。 */
     editMusic(info: {
         userUUID: UserUUID;
         musicUUID: MusicUUID;
@@ -1033,7 +1076,7 @@ class MusicPlayerJSONManagerClass {
                 }
             }
             /** ジャンルを設定します。addと違い置き換えます。 */
-            setGenre(genre: string[]) { 
+            setGenre(genre: string[]) {
                 const music = this.#MusicPlayerJSONManager.json.musics.find(music => music.uuid === this.#info.musicUUID.uuid);
                 if (music) {
                     music.genre = genre;
@@ -1043,7 +1086,7 @@ class MusicPlayerJSONManagerClass {
                 }
             }
             /** 歌詞を設定します。 */
-            setLyrics(lyrics: Lyrics) { 
+            setLyrics(lyrics: Lyrics) {
                 const music = this.#MusicPlayerJSONManager.json.musics.find(music => music.uuid === this.#info.musicUUID.uuid);
                 if (music) {
                     const index = music.lyrics.findIndex(lyric => lyric.lang === lyrics.lang);
@@ -1281,10 +1324,11 @@ class MusicPlayerJSONManagerClass {
                 } else {
                     return false;
                 }
-            }            
+            }
         }
         return new EditMusic(info, this);
     }
+    /** プレイリストを編集します。 */
     editPlaylist(info: {
         userUUID: UserUUID;
         playlistUUID: PlaylistUUID;
@@ -1302,9 +1346,58 @@ class MusicPlayerJSONManagerClass {
                 this.#info = info;
                 this.#MusicPlayerJSONManager = MusicPlayerJSONManager;
             }
+            /** プレイリスト名をセットします。 */
+            setName(name: string) {
+                const playlist = this.#MusicPlayerJSONManager.json.playlists.find(playlist => playlist.uuid === this.#info.playlistUUID.uuid);
+                if (playlist) {
+                    playlist.name = name;
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+            /** 説明を設定します。 */
+            setDescription(description: string) {
+                const playlist = this.#MusicPlayerJSONManager.json.playlists.find(playlist => playlist.uuid === this.#info.playlistUUID.uuid);
+                if (playlist) {
+                    playlist.description = description;
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+            /** 曲を追加します。 */
+            addMusic(musicUUID: MusicUUID, streamNumber: number, type: "music" | "video") {
+                const playlist = this.#MusicPlayerJSONManager.json.playlists.find(playlist => playlist.uuid === this.#info.playlistUUID.uuid);
+                if (playlist) {
+                    playlist.musics.push({
+                        uuid: musicUUID.uuid,
+                        number: streamNumber,
+                        type: type
+                    });
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+            /** 曲を削除します。 */
+            removeMusic(index: number) {
+                const playlist = this.#MusicPlayerJSONManager.json.playlists.find(playlist => playlist.uuid === this.#info.playlistUUID.uuid);
+                if (playlist) {
+                    if (playlist.musics[index]) {
+                        playlist.musics.splice(index, 1);
+                        return true;
+                    } else {
+                        return false;
+                    }
+                } else {
+                    return false;
+                }
+            }
         }
         return new EditPlaylist(info, this);
     }
+    /** ファイルを編集します。 */
     editFile(info: {
         userUUID: UserUUID;
         name: FileName;
@@ -1321,6 +1414,84 @@ class MusicPlayerJSONManagerClass {
             }, MusicPlayerJSONManager: MusicPlayerJSONManagerClass) {
                 this.#info = info;
                 this.#MusicPlayerJSONManager = MusicPlayerJSONManager;
+            }
+            /** 取得元を設定します。 */
+            setImportSource(
+                /**
+                 * - onlineVideoService: オンライン動画サービスから(YouTube、niconicoなど) - オリジナル度1 再エンコードされているため、劣化が少し生じる。再エンコードした場合はこの部類となる
+                 * - analogRecording: 音源からアナログ録音したもの - オリジナル度1 アナログ収録のため、劣化が少し生じる
+                 * - onlineMusicService: オンライン音楽サービスから(Apple Music、Spotifyなど) - オリジナル度2 音楽サービスとして公開されているため劣化は少ない
+                 * - digitalRecording: 音源から録音したもの - オリジナル度2 デジタル収録のため、劣化は少ない
+                 * - CD: CDなどの音源から - オリジナル度3 視聴するための音源であるため、劣化は少ない
+                 * - downloadFile: ダウンロードしたファイルから(SoundCloudやフリー音源サイトなどの未改変音源) - オリジナル度4 オリジナルに近いため、劣化は少ない
+                 * - original: オリジナルの音源(自作音源など) - オリジナル度5 オリジナルであるため、劣化はない
+                 * - other: その他
+                 */
+                source: "onlineVideoService" | "analogRecording" | "onlineMusicService" | "digitalRecording" | "CD" | "downloadFile" | "original" | "other"
+            ) {
+                const file = this.#MusicPlayerJSONManager.json.files.find(file => file.name === this.#info.name.name);
+                if (file) {
+                    file.importSource = source;
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+            /** 説明を設定します。 */
+            setDescription(description: string) {
+                const file = this.#MusicPlayerJSONManager.json.files.find(file => file.name === this.#info.name.name);
+                if (file) {
+                    file.description = description;
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+            /** 説明を削除します。 */
+            deleteDescription() {
+                const file = this.#MusicPlayerJSONManager.json.files.find(file => file.name === this.#info.name.name);
+                if (file) {
+                    file.description = undefined;
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+            /** オリジナルのYouTube VideoIDを設定します。 */
+            setVideoId(videoId: string) {
+                const file = this.#MusicPlayerJSONManager.json.files.find(file => file.name === this.#info.name.name);
+                if (file) {
+                    file.originalURL.videoId = videoId;
+                    return true;
+                }
+                return false;
+            }
+            /** オリジナルのYouTube VideoIDを削除します。 */
+            removeVideoId() {
+                const file = this.#MusicPlayerJSONManager.json.files.find(file => file.name === this.#info.name.name);
+                if (file) {
+                    file.originalURL.videoId = undefined;
+                    return true;
+                }
+                return false;
+            }
+            /** オリジナルのダウンロードリンクを設定します。 */
+            setOriginalURL(url: string) {
+                const file = this.#MusicPlayerJSONManager.json.files.find(file => file.name === this.#info.name.name);
+                if (file) {
+                    file.originalURL.downloadURL = url;
+                    return true;
+                }
+                return false;
+            }
+            /** オリジナルのダウンロードリンクを削除します。 */
+            removeOriginalURL() {
+                const file = this.#MusicPlayerJSONManager.json.files.find(file => file.name === this.#info.name.name);
+                if (file) {
+                    file.originalURL.downloadURL = undefined;
+                    return true;
+                }
+                return false;
             }
         }
         return new EditFile(info, this);
