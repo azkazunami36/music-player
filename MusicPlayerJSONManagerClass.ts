@@ -1203,6 +1203,169 @@ export class MusicPlayerJSONManagerClass {
                     return false;
                 }
             }
+            editMusicStream(musicStream: MusicStream) {
+                class EditMusicStream {
+                    #info: {
+                        musicUUID: MusicUUID;
+                        number: number;
+                    }
+                    #MusicPlayerJSONManager;
+                    constructor(info: {
+                        musicUUID: MusicUUID;
+                        number: number;
+                    }, MusicPlayerJSONManager: MusicPlayerJSONManagerClass) {
+                        this.#info = info;
+                        this.#MusicPlayerJSONManager = MusicPlayerJSONManager;
+                    }
+                    /** ファイルを変更する */
+                    changeFile(file: FileName) {
+                        const music = this.#MusicPlayerJSONManager.json.musics.find(music => music.uuid === this.#info.musicUUID.uuid);
+                        if (music) {
+                            music.music[this.#info.number].file = file.name;
+                            return true;
+                        } else {
+                            return false;
+                        }
+                    }
+                    /** 言語を変更する */
+                    changeLang(lang: string) {
+                        const music = this.#MusicPlayerJSONManager.json.musics.find(music => music.uuid === this.#info.musicUUID.uuid);
+                        if (music) {
+                            music.music[this.#info.number].lang = lang;
+                            return true;
+                        } else {
+                            return false;
+                        }
+                    }
+                    /** アーティストを追加する */
+                    addArtist(artistUUID: ArtistUUID) {
+                        const music = this.#MusicPlayerJSONManager.json.musics.find(music => music.uuid === this.#info.musicUUID.uuid);
+                        if (music) {
+                            music.music[this.#info.number].artist.push(artistUUID.uuid);
+                            return true;
+                        } else {
+                            return false;
+                        }
+                    }
+                    /** アーティストを削除する */
+                    removeArtist(artistUUID: ArtistUUID) {
+                        const music = this.#MusicPlayerJSONManager.json.musics.find(music => music.uuid === this.#info.musicUUID.uuid);
+                        if (music) {
+                            const index = music.music[this.#info.number].artist.findIndex(artist => artist === artistUUID.uuid);
+                            if (index !== -1) { music.music[this.#info.number].artist.splice(index, 1); }
+                            return true;
+                        } else {
+                            return false;
+                        }
+                    }
+                    /** タイプを変更する */
+                    changeType(type: "normal" | "vocal" | "instrumental" | "other") {
+                        const music = this.#MusicPlayerJSONManager.json.musics.find(music => music.uuid === this.#info.musicUUID.uuid);
+                        if (music) {
+                            music.music[this.#info.number].type = type;
+                            return true;
+                        } else {
+                            return false;
+                        }
+                    }
+                    setDelayCorrection(delayCorrection: {
+                        startTime?: number;
+                        endTime?: number;
+                    }) {
+                        const music = this.#MusicPlayerJSONManager.json.musics.find(music => music.uuid === this.#info.musicUUID.uuid);
+                        if (music) {
+                            if (delayCorrection.startTime) music.music[this.#info.number].delayCorrection.startTime = delayCorrection.startTime;
+                            if (delayCorrection.endTime) music.music[this.#info.number].delayCorrection.endTime = delayCorrection.endTime;
+                            return true;
+                        } else {
+                            return false;
+                        }
+                    }
+                }
+                return new EditMusicStream(musicStream, this.#MusicPlayerJSONManager);
+            }
+            editVideoStream(videoStream: VideoStream) {
+                class EditVideoStream {
+                    #info: {
+                        musicUUID: MusicUUID;
+                        number: number;
+                    }
+                    #MusicPlayerJSONManager;
+                    constructor(info: {
+                        musicUUID: MusicUUID;
+                        number: number;
+                    }, MusicPlayerJSONManager: MusicPlayerJSONManagerClass) {
+                        this.#info = info;
+                        this.#MusicPlayerJSONManager = MusicPlayerJSONManager;
+                    }
+                    /** ファイルを変更する */
+                    changeFile(file: FileName) {
+                        const music = this.#MusicPlayerJSONManager.json.musics.find(music => music.uuid === this.#info.musicUUID.uuid);
+                        if (music) {
+                            music.video[this.#info.number].file = file.name;
+                            return true;
+                        } else {
+                            return false;
+                        }
+                    }
+                    /** 言語を変更する */
+                    changeLang(lang: string) {
+                        const music = this.#MusicPlayerJSONManager.json.musics.find(music => music.uuid === this.#info.musicUUID.uuid);
+                        if (music) {
+                            music.video[this.#info.number].lang = lang;
+                            return true;
+                        } else {
+                            return false;
+                        }
+                    }
+                    /** アーティストを追加する */
+                    addArtist(artistUUID: ArtistUUID) {
+                        const music = this.#MusicPlayerJSONManager.json.musics.find(music => music.uuid === this.#info.musicUUID.uuid);
+                        if (music) {
+                            music.video[this.#info.number].artist.push(artistUUID.uuid);
+                            return true;
+                        } else {
+                            return false;
+                        }
+                    }
+                    /** アーティストを削除する */
+                    removeArtist(artistUUID: ArtistUUID) {
+                        const music = this.#MusicPlayerJSONManager.json.musics.find(music => music.uuid === this.#info.musicUUID.uuid);
+                        if (music) {
+                            const index = music.video[this.#info.number].artist.findIndex(artist => artist === artistUUID.uuid);
+                            if (index !== -1) { music.video[this.#info.number].artist.splice(index, 1); }
+                            return true;
+                        } else {
+                            return false;
+                        }
+                    }
+                    /** タイプを変更する */
+                    changeType(type: "other" | "musicvideo" | "movie") {
+                        const music = this.#MusicPlayerJSONManager.json.musics.find(music => music.uuid === this.#info.musicUUID.uuid);
+                        if (music) {
+                            music.video[this.#info.number].type = type;
+                            return true;
+                        } else {
+                            return false;
+                        }
+                    }
+                    /** 動画のタイミングを調整する。 */
+                    setDelayCorrection(delayCorrection: {
+                        startTime?: number;
+                        endTime?: number;
+                    }) {
+                        const music = this.#MusicPlayerJSONManager.json.musics.find(music => music.uuid === this.#info.musicUUID.uuid);
+                        if (music) {
+                            if (delayCorrection.startTime) music.video[this.#info.number].delayCorrection.startTime = delayCorrection.startTime;
+                            if (delayCorrection.endTime) music.video[this.#info.number].delayCorrection.endTime = delayCorrection.endTime;
+                            return true;
+                        } else {
+                            return false;
+                        }
+                    }
+                }
+                return new EditVideoStream(videoStream, this.#MusicPlayerJSONManager);
+            }
             /** 音楽アートワークを追加します。 */
             addMusicArtwork(artwork: Artwork) {
                 const music = this.#MusicPlayerJSONManager.json.musics.find(music => music.uuid === this.#info.musicUUID.uuid);
