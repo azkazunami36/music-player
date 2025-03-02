@@ -1,5 +1,6 @@
 import fs from "fs";
 import { randomUUID } from "crypto";
+import Stream from "stream";
 
 /** アートワーク情報です。ファイル名がアートワークであることを証明します。 */
 export interface Artwork {
@@ -287,6 +288,8 @@ export interface musicplayerJSON {
             /** YouTube以外からの場合はURLを入力 */
             downloadURL?: string;
         }
+        /** 音量の修正。大きすぎたり小さすぎたりする音量を修正できる。音声ファイル限定。 */
+        volumeCorrection?: number;
     }[];
     /** ユーザーリスト */
     users: {
@@ -488,16 +491,42 @@ export class MusicPlayerJSONManagerClass {
         };
     }
     /** ファイルを追加します。 */
-    addFile(info: {
+    async addFile(info: {
         userUUID: UserUUID;
         name: string;
         importSource: "onlineVideoService" | "analogRecording" | "onlineMusicService" | "digitalRecording" | "CD" | "downloadFile" | "original" | "other";
         originalURL: {
             videoId?: string;
             downloadURL?: string;
-        }
-    }): FileName {
+        };
+        readStream: fs.ReadStream | Stream.Readable;
+    }): Promise<FileName | false> {
         const date = new Date();
+        if (this.json.files.find(file => file.name === info.name)) return false;
+        if (!fs.existsSync("cache")) fs.mkdirSync("cache");
+        if (fs.existsSync("cache/" + info.name)) fs.unlinkSync("cache/" + info.name);
+        const writeStream = fs.createWriteStream("cache/" + info.name);
+        info.readStream.pipe(writeStream);
+        
+        await new Promise((resolve, reject) => {
+            const cleanup = () => {
+                info.readStream.removeListener("error", onError);
+                writeStream.removeListener("error", onError);
+                writeStream.removeListener("close", onClose);
+            };
+            const onError = (err: Error) => {
+                cleanup();
+                reject(err);
+            };
+            const onClose = () => {
+                cleanup();
+                resolve(true);
+            };
+            info.readStream.once("error", onError);
+            writeStream.once("error", onError);
+            writeStream.once("close", onClose);
+        });
+
         this.json.files.push({
             name: info.name,
             officialInfo: false,
@@ -1649,6 +1678,15 @@ export class MusicPlayerJSONManagerClass {
                 const file = this.#MusicPlayerJSONManager.json.files.find(file => file.name === this.#info.name.name);
                 if (file) {
                     file.originalURL.downloadURL = undefined;
+                    return true;
+                }
+                return false;
+            }
+            /** 音声の音量を修正します。 */
+            setVolumeCorrection(volumeCorrection: number) {
+                const file = this.#MusicPlayerJSONManager.json.files.find(file => file.name === this.#info.name.name);
+                if (file) {
+                    file.volumeCorrection = volumeCorrection;
                     return true;
                 }
                 return false;
