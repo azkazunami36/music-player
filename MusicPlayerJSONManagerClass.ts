@@ -1493,4 +1493,73 @@ export class MusicPlayerJSONManagerClass {
         }
         return new EditFile(info, this);
     }
+    CreateType = class CreateType {
+        static file(name: string): FileName {
+            return {
+                type: "file",
+                name: name
+            }
+        }
+        static album(uuid: string): AlbumUUID {
+            return {
+                type: "album",
+                uuid: uuid
+            }
+        }
+        static artist(uuid: string): ArtistUUID {
+            return {
+                type: "artist",
+                uuid: uuid
+            }
+        }
+        static music(uuid: string): MusicUUID {
+            return {
+                type: "music",
+                uuid: uuid
+            }
+        }
+        static playlist(uuid: string): PlaylistUUID {
+            return {
+                type: "playlist",
+                uuid: uuid
+            }
+        }
+        static artwork(info: {
+            lang: string;
+            file: string;
+            main?: boolean;
+        }): Artwork {
+            return {
+                lang: info.lang,
+                file: info.file,
+                main: info.main || false
+            }
+        }
+        static musicStream(info: {
+            uuid: string;
+            number: number;
+        }): MusicStream {
+            return {
+                musicUUID: CreateType.music(info.uuid),
+                type: "musicStream",
+                number: info.number
+            }
+        }
+        static videoStream(info: {
+            uuid: string;
+            number: number;
+        }): VideoStream {
+            return {
+                musicUUID: CreateType.music(info.uuid),
+                type: "videoStream",
+                number: info.number
+            }
+        }
+        static user(uuid: string): UserUUID {
+            return {
+                type: "user",
+                uuid: uuid
+            }
+        }
+    }
 }
