@@ -1762,5 +1762,57 @@ export class MusicPlayerJSONManagerClass {
                 uuid: uuid
             }
         }
+        static lyrics(jsonstr: string): Lyrics | undefined {
+            try {
+                const data: Lyrics = JSON.parse(jsonstr);
+                // 型チェック: dataはobjectであること
+                if (typeof data !== 'object' || data === null) return undefined;
+                // langチェック
+                if (typeof data.lang !== 'string') return undefined;
+                // bodyチェック（配列）
+                if (!Array.isArray(data.body)) return undefined;
+                // 各body要素をチェック
+                for (const bodyElem of data.body) {
+                    if (typeof bodyElem !== 'object' || bodyElem === null) return undefined;
+                    // phrasesチェック（配列）
+                    if (!Array.isArray(bodyElem.phrases)) return undefined;
+                    for (const phrase of bodyElem.phrases) {
+                        if (typeof phrase !== 'object' || phrase === null) return undefined;
+                        // strチェック（配列）
+                        if (!Array.isArray(phrase.str)) return undefined;
+                        for (const strItem of phrase.str) {
+                            if (typeof strItem !== 'object' || strItem === null) return undefined;
+                            // textは必須の文字列
+                            if (typeof strItem.text !== 'string') return undefined;
+                            // rubyが存在する場合は文字列
+                            if (strItem.ruby !== undefined && typeof strItem.ruby !== 'string') return undefined;
+                        }
+                        // timingチェック（配列）
+                        if (!Array.isArray(phrase.timing)) return undefined;
+                        for (const t of phrase.timing) {
+                            if (typeof t !== 'object' || t === null) return undefined;
+                            if (typeof t.time !== 'number') return undefined;
+                            if (typeof t.emphasis !== 'number') return undefined;
+                        }
+                    }
+                    // optionalなartistは文字列であること
+                    if (bodyElem.artist !== undefined && typeof bodyElem.artist !== 'string') return undefined;
+                    // typeチェック
+                    if (bodyElem.type !== undefined && !["main", "chorus", "other"].includes(bodyElem.type)) return undefined;
+                    // timingのチェック（存在する場合はobjectでありstartTimeとendTimeが数値）
+                    if (bodyElem.timing !== undefined) {
+                        if (typeof bodyElem.timing !== 'object' || bodyElem.timing === null) return undefined;
+                        if (typeof bodyElem.timing.startTime !== 'number' || typeof bodyElem.timing.endTime !== 'number') return undefined;
+                    }
+                    // phraseNumberは必須の数値
+                    if (typeof bodyElem.phraseNumber !== 'number') return undefined;
+                }
+                // globalなartistチェック
+                if (data.artist !== undefined && typeof data.artist !== 'string') return undefined;
+                return data as Lyrics;
+            } catch {
+                return undefined;
+            }
+        }
     }
 }

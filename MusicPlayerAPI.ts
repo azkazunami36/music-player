@@ -39,12 +39,35 @@ export enum AudioImportSourceType {
  */
 class MusicPlayerAPI {
     /**
+     * アルバムを作成します。
+     * @param info ユーザーUUIDと言語を入力します。
+     * @returns 作成されたアルバムのUUIDを返します。
+     */
+    static async createAlbum(info: {
+        userUUID: string;
+        lang: string;
+        title?: string;
+    }) {
+        const result = await fetch("/createAlbum", {
+            method: "POST",
+            body: JSON.stringify(info),
+            headers: {
+                "Content-Type": "application/json",
+            },
+        });
+        if (result.ok) {
+            return await result.text();
+        } else {
+            throw new Error(await result.text());
+        }
+    }
+    /**
      * ファイルをアップロードします。
      * @param file ファイルデータを入力します。
      * @param json データを入力します。
      * @returns ファイル名を返します。
      */
-    static async uploadFile(
+    static async addFile(
         file: File,
         json: {
             userUUID: string;
