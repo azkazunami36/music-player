@@ -2,14 +2,6 @@ import HTMLGeneratorHub from "./js/HTMLGeneratorHub.js";
 const button = new HTMLGeneratorHub.HTMLButtonGenerator();
 button.text = "テスト";
 button.click(() => {
-    console.log("クリックされました");
+    button.border = !button.border;
 });
 document.body.appendChild(button.html);
-let status = false;
-setInterval(() => {
-    if (status) {
-        button.border = false;
-    }
-    else
-        button.border = true;
-}, 1000);
