@@ -5,3 +5,11 @@ button.click(() => {
     console.log("クリックされました");
 });
 document.body.appendChild(button.html);
+let status = false;
+setInterval(() => {
+    if (status) {
+        button.border = false;
+    }
+    else
+        button.border = true;
+}, 1000);

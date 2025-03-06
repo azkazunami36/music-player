@@ -40,4 +40,12 @@ export class HTMLButtonGenerator extends HTMLGenereatorMaster {
     click(callback) {
         this.#mainButtonHtml.onclick = callback;
     }
+    set border(boolean) {
+        if (this.#mainButtonHtml.classList.contains("border") === boolean)
+            return;
+        this.#mainButtonHtml.classList.toggle("border");
+    }
+    get border() {
+        return this.#mainButtonHtml.classList.contains("border");
+    }
 }

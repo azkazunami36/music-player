@@ -9,4 +9,6 @@ export declare class HTMLButtonGenerator extends HTMLGenereatorMaster {
     set text(text: string);
     get html(): HTMLButtonElement;
     click(callback: () => void): void;
+    set border(boolean: boolean);
+    get border(): boolean;
 }

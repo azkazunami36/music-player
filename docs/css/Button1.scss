@@ -1,6 +1,17 @@
 button.Button1 {
+    border: 0;
+    background: rgba(0, 0, 0, 0);
+    padding: 0;
     .Button1Main {
+        width: 100%;
+        height: 100%;
+        background: rgb(250 250 250);
+        padding: 3px 5px;
+        border-radius: 5px;
         .Button1Icon {}
         .Button1Text {}
+    }
+    .border {
+        border: 1px rgb(125 125 125 / 50%) solid;
     }
 }
