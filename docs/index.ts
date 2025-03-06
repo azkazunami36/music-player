@@ -12,6 +12,7 @@ document.body.appendChild(button.html);
 let status = false;
 
 setInterval(() => {
+    status = !status;
     if (status) {
         button.border = false;
     } else button.border = true;
