@@ -7,6 +7,7 @@ export class HTMLButtonGenerator extends HTMLGenereatorMaster {
     #buttonHtml: HTMLButtonElement;
     #mainButtonHtml: HTMLDivElement;
     #iconHtml: HTMLDivElement;
+    #iconImgHtml: HTMLImageElement;
     #textHtml: HTMLDivElement;
     constructor() {
         super("Button1.css");
@@ -23,6 +24,11 @@ export class HTMLButtonGenerator extends HTMLGenereatorMaster {
         icon.classList.add("Button1Icon");
         mainButton.appendChild(icon);
         this.#iconHtml = icon;
+        /** アイコンの画像 */
+        const iconImg = document.createElement("img");
+        iconImg.classList.add("Button1IconImg");
+        icon.appendChild(iconImg);
+        this.#iconImgHtml = iconImg;
         /** ボタンのテキスト */
         const text = document.createElement("div");
         text.classList.add("Button1Text");
@@ -30,7 +36,7 @@ export class HTMLButtonGenerator extends HTMLGenereatorMaster {
         this.#textHtml = text;
     }
     set imageURL(imageURL: string) {
-        this.#iconHtml.style.backgroundImage = `url(${imageURL})`;
+        this.#iconImgHtml.src = imageURL;
     }
     set text(text: string) {
         this.#textHtml.textContent = text;
