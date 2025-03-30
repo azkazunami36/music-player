@@ -5,12 +5,344 @@
 <head>
     <meta charset="UTF-8">
     <title>Miharu Music Player</title>
-    <script src="index.js" type="module"></script>
-    <link rel="stylesheet" href="style.css">
+    <!-- タブビューの管理 -->
+    <script>
+    window.addEventListener('DOMContentLoaded', function() {
+      const tabMapping = {
+        'tabAlbum': 'albumView',
+        'tabArtist': 'artistView',
+        'tabMusic': 'musicView',
+        'tabFile': 'fileView'
+      };
+
+      const tabs = document.querySelectorAll('#tabList li');
+
+      // 初期状態：アルバムビューのみ表示
+      for (const key in tabMapping) {
+        const view = document.getElementById(tabMapping[key]);
+        if (key === 'tabAlbum') {
+          view.style.display = 'block';
+        } else {
+          view.style.display = 'none';
+        }
+      }
+
+      // 各タブのクリックイベント
+      tabs.forEach(function(tab) {
+        tab.addEventListener('click', function() {
+          // 全タブから active クラスを除去
+          tabs.forEach(t => t.classList.remove('active'));
+          // クリックされたタブに active クラスを付与
+          tab.classList.add('active');
+
+          // 全てのビューを非表示にする
+          for (const key in tabMapping) {
+             document.getElementById(tabMapping[key]).style.display = 'none';
+          }
+
+          // 対応するビューのみ表示
+          const viewId = tabMapping[tab.id];
+          document.getElementById(viewId).style.display = 'block';
+        });
+      });
+    });
+    </script>
+    <!-- タブ内容のシステム -->
+    <script>
+    const albums = [
+      {
+        uuid: "al-001",
+        officialInfo: false,
+        infoAuthor: "user-001",
+        musics: ["m-001"],
+        artist: ["a-001"],
+        featuringArtist: [],
+        addedDate: Date.now(),
+        createDate: { year: 2024, month: 4, day: 1, rawTime: Date.now() },
+        albumArtwork: [],
+        title: [
+          {
+            lang: "ja",
+            name: "風のアルバム",
+            titleReadChar: []
+          }
+        ],
+        genre: ["J-Pop"]
+      }
+    ];
+    const artists = [
+      {
+        uuid: "a-001",
+        officialInfo: false,
+        infoAuthor: "user-001",
+        addedDate: Date.now(),
+        albums: ["al-001"],
+        characterVoice: [],
+        artistArtwork: [],
+        name: [
+          {
+            lang: "ja",
+            name: "みはる",
+            nameReadChar: []
+          }
+        ]
+      }
+    ];
+    const musics = [
+      {
+        uuid: "m-001",
+        officialInfo: false,
+        infoAuthor: "user-001",
+        artist: ["a-001"],
+        featuringArtist: [],
+        addedDate: Date.now(),
+        createDate: { year: 2024, month: 4, day: 1, rawTime: Date.now() },
+        musicArtwork: [],
+        title: [
+          {
+            lang: "ja",
+            name: "春風に乗って",
+            titleReadChar: []
+          }
+        ],
+        genre: ["J-Pop"],
+        lyrics: [],
+        music: [],
+        video: []
+      }
+    ];
+    const playlists = [];
+    const files = [];
+    const users = [];
+    </script>
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            display: flex;
+            flex-direction: row;
+            border: 1px solid #ccc;
+        }
+
+        #tabList {
+            width: 300px;
+            border-right: 1px solid #ccc;
+            height: 100%;
+            box-sizing: border-box;
+            padding: 10px;
+        }
+
+        #tabList ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        #tabList li {
+            padding: 10px;
+            border-bottom: 1px solid #ccc;
+            cursor: pointer;
+        }
+
+        #tabList li.active {
+            background-color: #f0f0f0;
+        }
+
+        #mainViews {
+            flex: 1;
+            height: 100%;
+            border-left: 1px solid #ccc;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            border: 1px solid #ccc;
+            padding: 8px;
+            text-align: left;
+        }
+    </style>
+    <script>
+class AlbumListManager {
+  constructor(albums, viewId) {
+    this.albums = albums;
+    this.viewElement = document.getElementById(viewId);
+  }
+  render() {
+    this.viewElement.innerHTML = "";
+    const table = document.createElement("table");
+    const thead = document.createElement("thead");
+    const headerRow = document.createElement("tr");
+    const thTitle = document.createElement("th");
+    thTitle.innerText = "アルバムタイトル";
+    const thEdit = document.createElement("th");
+    thEdit.innerText = "編集";
+    headerRow.appendChild(thTitle);
+    headerRow.appendChild(thEdit);
+    thead.appendChild(headerRow);
+    table.appendChild(thead);
+    const tbody = document.createElement("tbody");
+    this.albums.forEach(album => {
+      const row = document.createElement("tr");
+      const tdTitle = document.createElement("td");
+      const title = (album.title && album.title.length > 0) ? album.title[0].name : "";
+      tdTitle.innerText = title;
+      const tdEdit = document.createElement("td");
+      const btn = document.createElement("button");
+      btn.innerText = "編集";
+      tdEdit.appendChild(btn);
+      row.appendChild(tdTitle);
+      row.appendChild(tdEdit);
+      tbody.appendChild(row);
+    });
+    table.appendChild(tbody);
+    this.viewElement.appendChild(table);
+  }
+}
+
+class ArtistListManager {
+  constructor(artists, viewId) {
+    this.artists = artists;
+    this.viewElement = document.getElementById(viewId);
+  }
+  render() {
+    this.viewElement.innerHTML = "";
+    const table = document.createElement("table");
+    const thead = document.createElement("thead");
+    const headerRow = document.createElement("tr");
+    const thName = document.createElement("th");
+    thName.innerText = "アーティスト名";
+    const thEdit = document.createElement("th");
+    thEdit.innerText = "編集";
+    headerRow.appendChild(thName);
+    headerRow.appendChild(thEdit);
+    thead.appendChild(headerRow);
+    table.appendChild(thead);
+    const tbody = document.createElement("tbody");
+    this.artists.forEach(artist => {
+      const row = document.createElement("tr");
+      const tdName = document.createElement("td");
+      const name = (artist.name && artist.name.length > 0) ? artist.name[0].name : "";
+      tdName.innerText = name;
+      const tdEdit = document.createElement("td");
+      const btn = document.createElement("button");
+      btn.innerText = "編集";
+      tdEdit.appendChild(btn);
+      row.appendChild(tdName);
+      row.appendChild(tdEdit);
+      tbody.appendChild(row);
+    });
+    table.appendChild(tbody);
+    this.viewElement.appendChild(table);
+  }
+}
+
+class MusicListManager {
+  constructor(musics, viewId) {
+    this.musics = musics;
+    this.viewElement = document.getElementById(viewId);
+  }
+  render() {
+    this.viewElement.innerHTML = "";
+    const table = document.createElement("table");
+    const thead = document.createElement("thead");
+    const headerRow = document.createElement("tr");
+    const thTitle = document.createElement("th");
+    thTitle.innerText = "曲タイトル";
+    const thArtist = document.createElement("th");
+    thArtist.innerText = "アーティスト";
+    const thAlbum = document.createElement("th");
+    thAlbum.innerText = "アルバム";
+    const thEdit = document.createElement("th");
+    thEdit.innerText = "編集";
+    headerRow.appendChild(thTitle);
+    headerRow.appendChild(thArtist);
+    headerRow.appendChild(thAlbum);
+    headerRow.appendChild(thEdit);
+    thead.appendChild(headerRow);
+    table.appendChild(thead);
+    const tbody = document.createElement("tbody");
+    this.musics.forEach(music => {
+      const row = document.createElement("tr");
+      const tdTitle = document.createElement("td");
+      const title = (music.title && music.title.length > 0) ? music.title[0].name : "";
+      tdTitle.innerText = title;
+
+      const tdArtist = document.createElement("td");
+      let artistName = "";
+      if(music.artist && music.artist.length > 0){
+         const artist = artists.find(a => a.uuid === music.artist[0]);
+         if(artist && artist.name && artist.name.length > 0) {
+           artistName = artist.name[0].name;
+         }
+      }
+      tdArtist.innerText = artistName;
+
+      const tdAlbum = document.createElement("td");
+      let albumTitle = "";
+      if(music.albumUUID) {
+         const album = albums.find(a => a.uuid === music.albumUUID);
+         if(album && album.title && album.title.length > 0) {
+           albumTitle = album.title[0].name;
+         }
+      }
+      tdAlbum.innerText = albumTitle;
+
+      const tdEdit = document.createElement("td");
+      const btn = document.createElement("button");
+      btn.innerText = "編集";
+      tdEdit.appendChild(btn);
+
+      row.appendChild(tdTitle);
+      row.appendChild(tdArtist);
+      row.appendChild(tdAlbum);
+      row.appendChild(tdEdit);
+      tbody.appendChild(row);
+    });
+    table.appendChild(tbody);
+    this.viewElement.appendChild(table);
+  }
+}
+
+window.addEventListener('DOMContentLoaded', function() {
+  const albumManager = new AlbumListManager(albums, "albumView");
+  albumManager.render();
+
+  const artistManager = new ArtistListManager(artists, "artistView");
+  artistManager.render();
+
+  const musicManager = new MusicListManager(musics, "musicView");
+  musicManager.render();
+});
+</script>
 </head>
 
 <body>
-
+    <!-- 左側のタブリスト。クリックして右側のリストの表示を切り替える。 -->
+    <div id="tabList">
+        <ul>
+            <li id="tabAlbum" class="active">アルバム</li>
+            <li id="tabArtist">アーティスト</li>
+            <li id="tabMusic">ミュージック</li>
+            <li id="tabFile">ファイル</li>
+        </ul>
+    </div>
+    <!-- divでタブごとに何を表示したいかを切り替えられるよう囲う -->
+    <div id="mainViews">
+        <div id="albumView">アルバムコンテンツ</div>
+        <div id="artistView" style="display:none;">アーティストコンテンツ</div>
+        <div id="musicView" style="display:none;">ミュージックコンテンツ</div>
+        <div id="fileView" style="display:none;">ファイルコンテンツ</div>
+    </div>
 </body>
 
 </html>
